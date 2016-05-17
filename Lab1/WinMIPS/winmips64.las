@@ -1,0 +1,1 @@
+E:\TuB Doc\ACS\lab\lab1\winmips64\myfiles\smooth_ver_5.s
