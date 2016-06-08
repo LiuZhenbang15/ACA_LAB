@@ -185,6 +185,10 @@ _mm_store_si128(&gt_vec[7], h);
 // check out the following link
 // https://www.randombit.net/bitbashing/2009/10/08/integer_matrix_transpose_in_sse2.html
 // for a better understanding of how matrix tansposition works on SSE.
+//other useful links include
+//http://homepages.cae.wisc.edu/~ece734/mmx/w_idct.pdf
+//and
+//https://software.intel.com/sites/default/files/m/d/4/1/d/8/UsingIntelAVXToImplementIDCT-r1_5.pdf
 
 a = _mm_load_si128(&in_vec[2]);
 b = _mm_load_si128(&in_vec[6]);
