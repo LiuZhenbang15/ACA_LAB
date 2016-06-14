@@ -194,8 +194,6 @@ _mm_store_si128(TransPntr[t_indx+7], TransVal7);
 static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
 {
 
-  //int add = 1<<(shift-1); // to be removed
-
 //we cast the original 16X16 matrix to an SIMD vector type
     __m128i *g_aiT16_vec  = (__m128i *)g_aiT16; 
 
