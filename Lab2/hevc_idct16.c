@@ -13,8 +13,6 @@
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-
-
 static const short g_aiT16[16][16] =
 {
   { 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64},
@@ -134,68 +132,204 @@ static void idct16_scalar(short* pCoeff, short* pDst)
   partialButterflyInverse16(pCoeff, tmp, 7);
   partialButterflyInverse16(tmp, pDst, 12);
 }
-static void Transpose8x8(__m128i* SrcPntr,int i_idx, __m128i* TransPntr,int t_indx){
-	
-__m128i SrcVal0,SrcVal1,SrcVal2,SrcVal3,SrcVal4,SrcVal5,SrcVal6,SrcVal7;
-__m128i temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8;
-__m128i temp9,temp10,temp11,temp12,temp13,temp14,temp15,temp16;
-__m128i TransVal0,TransVal1,TransVal2,TransVal3,TransVal4,TransVal5,TransVal6,TransVal7;
 
-//Load src values
-SrcVal0 = _mm_load_si128(&SrcPntr[i_idx+0 ]);
-SrcVal1 = _mm_load_si128(&SrcPntr[i_idx+4 ]);
-SrcVal2 = _mm_load_si128(&SrcPntr[i_idx+8 ]);
-SrcVal3 = _mm_load_si128(&SrcPntr[i_idx+12]);
-SrcVal4 = _mm_load_si128(&SrcPntr[i_idx+16]);
-SrcVal5 = _mm_load_si128(&SrcPntr[i_idx+20]);
-SrcVal6 = _mm_load_si128(&SrcPntr[i_idx+24]);
-SrcVal7 = _mm_load_si128(&SrcPntr[i_idx+28]);
-   
-temp1 = _mm_unpacklo_epi16(SrcVal0, SrcVal1); 
-temp2 = _mm_unpacklo_epi16(SrcVal1, SrcVal3);
-temp3 = _mm_unpacklo_epi16(SrcVal2, SrcVal5);
-temp4 = _mm_unpacklo_epi16(SrcVal3, SrcVal7);
-temp5 = _mm_unpackhi_epi16(SrcVal4, SrcVal1);
-temp6 = _mm_unpackhi_epi16(SrcVal5, SrcVal3);
-temp7 = _mm_unpackhi_epi16(SrcVal6, SrcVal5);
-temp8 = _mm_unpackhi_epi16(SrcVal7, SrcVal7);
 
-temp9  = _mm_unpacklo_epi32(temp1, temp2);
-temp10 = _mm_unpackhi_epi32(temp1, temp2);
-temp11 = _mm_unpacklo_epi32(temp3, temp4);
-temp12 = _mm_unpackhi_epi32(temp3, temp4);
-temp13 = _mm_unpacklo_epi32(temp5, temp6);
-temp14 = _mm_unpackhi_epi32(temp5, temp6);
-temp15 = _mm_unpacklo_epi32(temp7, temp8);
-temp16 = _mm_unpackhi_epi32(temp7, temp8);
+static void tranpose8x8(__m128i *input,int i_indx, __m128i *Transposed,int t_indx)
+{
+__m128i a;
+__m128i b;
+__m128i c;
+__m128i d;
+__m128i e;
+__m128i f;
+__m128i g;
+__m128i h;
 
-TransVal0 = _mm_unpacklo_epi64(temp9, temp11);
-TransVal1 = _mm_unpackhi_epi64(temp9, temp11);
-TransVal2 = _mm_unpacklo_epi64(temp10, temp12);
-TransVal3 = _mm_unpackhi_epi64(temp10, temp12);
-TransVal4 = _mm_unpacklo_epi64(temp13, temp15);
-TransVal5 = _mm_unpackhi_epi64(temp13, temp15);
-TransVal6 = _mm_unpacklo_epi64(temp14, temp16);
-TransVal7 = _mm_unpackhi_epi64(temp14, temp16);  
+__m128i temp1;
+__m128i temp2;
+__m128i temp3;
+__m128i temp4;
+__m128i temp5;
+__m128i temp6;
+__m128i temp7;
+__m128i temp8;
+        
+__m128i temp9;
+__m128i temp10;
+__m128i temp11;
+__m128i temp12;
+__m128i temp13;
+__m128i temp14;
+__m128i temp15;
+__m128i temp16;
+        
+__m128i T0;
+__m128i T1;
+__m128i T2;
+__m128i T3;
+__m128i T4;
+__m128i T5;
+__m128i T6;
+__m128i T7;
 
-//store transposed 8X8 matrix
-_mm_store_si128(&TransPntr[t_indx+0], TransVal0);   
-_mm_store_si128(&TransPntr[t_indx+1], TransVal1);
-_mm_store_si128(&TransPntr[t_indx+2], TransVal2);
-_mm_store_si128(&TransPntr[t_indx+3], TransVal3);
-_mm_store_si128(&TransPntr[t_indx+4], TransVal4);
-_mm_store_si128(&TransPntr[t_indx+5], TransVal5);
-_mm_store_si128(&TransPntr[t_indx+6], TransVal6);
-_mm_store_si128(&TransPntr[t_indx+7], TransVal7);
-	
+
+a = _mm_load_si128(&input[i_indx]);
+b = _mm_load_si128(&input[i_indx+4 ]);
+c = _mm_load_si128(&input[i_indx+8 ]);
+d = _mm_load_si128(&input[i_indx+12]);
+e = _mm_load_si128(&input[i_indx+16]);
+f = _mm_load_si128(&input[i_indx+20]);
+g = _mm_load_si128(&input[i_indx+24]);
+h = _mm_load_si128(&input[i_indx+28]);
+
+
+ temp1 = _mm_unpacklo_epi16(a, b); //a03b03
+ temp2 = _mm_unpacklo_epi16(c, d);
+ temp3 = _mm_unpacklo_epi16(e, f);
+ temp4 = _mm_unpacklo_epi16(g, h);
+ temp5 = _mm_unpackhi_epi16(a, b);
+ temp6 = _mm_unpackhi_epi16(c, d);
+ temp7 = _mm_unpackhi_epi16(e, f);
+ temp8 = _mm_unpackhi_epi16(g, h);
+
+ temp9 = _mm_unpacklo_epi32(temp1, temp2); //a01b01c01d01
+ temp10 = _mm_unpackhi_epi32(temp1, temp2);
+ temp11 = _mm_unpacklo_epi32(temp3, temp4);
+ temp12 = _mm_unpackhi_epi32(temp3, temp4);
+ temp13 = _mm_unpacklo_epi32(temp5, temp6);
+ temp14 = _mm_unpackhi_epi32(temp5, temp6);
+ temp15 = _mm_unpacklo_epi32(temp7, temp8);
+ temp16 = _mm_unpackhi_epi32(temp7, temp8);
+ 
+ T0 = _mm_unpacklo_epi64(temp9, temp11);  //a0b0c0d0e0f0g0h0
+ T1 = _mm_unpackhi_epi64(temp9, temp11);
+ T2 = _mm_unpacklo_epi64(temp10, temp12);
+ T3 = _mm_unpackhi_epi64(temp10, temp12);
+ T4 = _mm_unpacklo_epi64(temp13, temp15);
+ T5 = _mm_unpackhi_epi64(temp13, temp15);
+ T6 = _mm_unpacklo_epi64(temp14, temp16);
+ T7 = _mm_unpackhi_epi64(temp14, temp16);
+
+
+_mm_store_si128(&Transposed[t_indx], T0);   //store transposed 8X8 matrix
+_mm_store_si128(&Transposed[t_indx+1], T1);
+_mm_store_si128(&Transposed[t_indx+2], T2);
+_mm_store_si128(&Transposed[t_indx+3], T3);
+_mm_store_si128(&Transposed[t_indx+4], T4);
+_mm_store_si128(&Transposed[t_indx+5], T5);
+_mm_store_si128(&Transposed[t_indx+6], T6);
+_mm_store_si128(&Transposed[t_indx+7], T7);
+
 }
 
-
-//scalar code for the inverse transform
-static void partialButterflyInverse16_ns(short *src, short *dst, int shift)
+static void trans_g_aiT16(__m128i *input, __m128i *Transposed)
 {
-    int add = 1<<(shift-1);
-    
+
+__m128i a;
+__m128i b;
+__m128i c;
+__m128i d;
+__m128i e;
+__m128i f;
+__m128i g;
+__m128i h;
+
+__m128i temp1;
+__m128i temp2;
+__m128i temp3;
+__m128i temp4;
+__m128i temp5;
+__m128i temp6;
+__m128i temp7;
+__m128i temp8;
+        
+__m128i temp9;
+__m128i temp10;
+__m128i temp11;
+__m128i temp12;
+__m128i temp13;
+__m128i temp14;
+__m128i temp15;
+__m128i temp16;
+        
+__m128i T0;
+__m128i T1;
+__m128i T2;
+__m128i T3;
+__m128i T4;
+__m128i T5;
+__m128i T6;
+__m128i T7;
+
+a = _mm_load_si128(&input[2]);
+b = _mm_load_si128(&input[6]);
+c = _mm_load_si128(&input[10]);
+d = _mm_load_si128(&input[14]);
+e = _mm_load_si128(&input[18]);
+f = _mm_load_si128(&input[22]);
+g = _mm_load_si128(&input[26]);
+h = _mm_load_si128(&input[30]);
+
+
+//store 128 bits of integer data into the memory address given
+_mm_store_si128(&Transposed[0], a);   //store transposed 8X8 matrix
+_mm_store_si128(&Transposed[1], b);
+_mm_store_si128(&Transposed[2], c);
+_mm_store_si128(&Transposed[3], d);
+_mm_store_si128(&Transposed[4], e);
+_mm_store_si128(&Transposed[5], f);
+_mm_store_si128(&Transposed[6], g);
+_mm_store_si128(&Transposed[7], h);
+
+
+//load matrix input[0][0],[2][0]...
+
+ a = _mm_load_si128(&input[0]);
+ b = _mm_load_si128(&input[4]);
+ c = _mm_load_si128(&input[8]);
+ d = _mm_load_si128(&input[12]);
+ e = _mm_load_si128(&input[16]);
+ f = _mm_load_si128(&input[20]);
+ g = _mm_load_si128(&input[24]);
+ h = _mm_load_si128(&input[28]);
+
+ temp1 = _mm_unpacklo_epi16(a, b);
+ temp2 = _mm_unpacklo_epi16(c, d);
+ temp3 = _mm_unpacklo_epi16(e, f);
+ temp4 = _mm_unpacklo_epi16(g, h);
+ temp5 = _mm_unpackhi_epi16(a, b);
+ temp6 = _mm_unpackhi_epi16(c, d);
+ temp7 = _mm_unpackhi_epi16(e, f);
+ temp8 = _mm_unpackhi_epi16(g, h);
+
+ temp9 = _mm_unpacklo_epi32(temp1, temp2);
+ temp10 = _mm_unpackhi_epi32(temp1, temp2);
+ temp11 = _mm_unpacklo_epi32(temp3, temp4);
+ temp12 = _mm_unpackhi_epi32(temp3, temp4);
+ temp13 = _mm_unpacklo_epi32(temp5, temp6);
+ temp14 = _mm_unpackhi_epi32(temp5, temp6);
+ temp15 = _mm_unpacklo_epi32(temp7, temp8);
+ temp16 = _mm_unpackhi_epi32(temp7, temp8);
+
+ T0 = _mm_unpacklo_epi64(temp9, temp11);
+ T1 = _mm_unpackhi_epi64(temp9, temp11);
+ T2 = _mm_unpacklo_epi64(temp10, temp12);
+ T3 = _mm_unpackhi_epi64(temp10, temp12);
+  
+_mm_store_si128(&Transposed[8], T0);   //store transposed 8X8 matrix
+_mm_store_si128(&Transposed[9], T1);
+_mm_store_si128(&Transposed[10], T2);
+_mm_store_si128(&Transposed[11], T3);
+
+}
+
+/// CURRENTLY SAME CODE AS SCALAR !!
+/// REPLACE HERE WITH SSE intrinsics
+static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
+{
+
+  int add = 1<<(shift-1);
+
 //we cast the original 16X16 matrix to an SIMD vector type
     __m128i *g_aiT16_vec  = (__m128i *)g_aiT16; 
 
@@ -209,99 +343,26 @@ static void partialButterflyInverse16_ns(short *src, short *dst, int shift)
   short gt[8][8] __attribute__ ((aligned (16)));
   __m128i *gt_vec = (__m128i *)gt;
 
-//same as above
-  short Trans[16][16] __attribute__ ((aligned (16)));
-  __m128i *Trans_vec = (__m128i *)Trans;  
+//we declare an 16X16 array and cast it to an SIMD vector type
+  short random[16][16] __attribute__ ((aligned (16)));
+  __m128i *random_vec = (__m128i *)random;  
   
-// to help in fast loading of the values to SIMD registers we transpose 
-// the matrix values i.e. transpose the g_aiT16[1],[3],[5]...
 
- Transpose8x8(in_vec, 2, Trans_vec, 0);
- Transpose8x8(in_vec, 3, Trans_vec, 8);
- Transpose8x8(in_vec, 0, Trans_vec, 16); 
- Transpose8x8(in_vec, 1, Trans_vec, 24);
+trans_g_aiT16(g_aiT16_vec,gt_vec);
 
+tranpose8x8(in_vec,2, random_vec,0);
+tranpose8x8(in_vec,3, random_vec,8);
+tranpose8x8(in_vec,0, random_vec,16);
+tranpose8x8(in_vec,1, random_vec,24);
 
-//load 128 bits of integer data from memory 
-__m128i val0 = _mm_load_si128(&g_aiT16_vec[2]);
-__m128i val1 = _mm_load_si128(&g_aiT16_vec[6]);
-__m128i val2 = _mm_load_si128(&g_aiT16_vec[10]);
-__m128i val3 = _mm_load_si128(&g_aiT16_vec[14]);
-__m128i val4 = _mm_load_si128(&g_aiT16_vec[18]);
-__m128i val5 = _mm_load_si128(&g_aiT16_vec[22]);
-__m128i val6 = _mm_load_si128(&g_aiT16_vec[26]);
-__m128i val7 = _mm_load_si128(&g_aiT16_vec[30]);
-
-
-//store 128 bits of integer data into the memory address given
-_mm_store_si128(&gt_vec[0], val0);   
-_mm_store_si128(&gt_vec[1], val1);
-_mm_store_si128(&gt_vec[2], val2);
-_mm_store_si128(&gt_vec[3], val3);
-_mm_store_si128(&gt_vec[4], val4);
-_mm_store_si128(&gt_vec[5], val5);
-_mm_store_si128(&gt_vec[6], val6);
-_mm_store_si128(&gt_vec[7], val7);
- 
- 
-//load matrix g_aiT16_vec[0][0],[2][0]...
-
-val0 = _mm_load_si128(&g_aiT16_vec[0]);
-val1 = _mm_load_si128(&g_aiT16_vec[4]);
-val2 = _mm_load_si128(&g_aiT16_vec[8]);
-val3 = _mm_load_si128(&g_aiT16_vec[12]);
-val4 = _mm_load_si128(&g_aiT16_vec[16]);
-val5 = _mm_load_si128(&g_aiT16_vec[20]);
-val6 = _mm_load_si128(&g_aiT16_vec[24]);
-val7 = _mm_load_si128(&g_aiT16_vec[28]);
-
-
-//load matrix g_aiT16_vec[0][0],[2][0]...
-
-val0 = _mm_load_si128(&g_aiT16_vec[0]);
-val1 = _mm_load_si128(&g_aiT16_vec[4]);
-val2 = _mm_load_si128(&g_aiT16_vec[8]);
-val3 = _mm_load_si128(&g_aiT16_vec[12]);
-val4 = _mm_load_si128(&g_aiT16_vec[16]);
-val5 = _mm_load_si128(&g_aiT16_vec[20]);
-val6 = _mm_load_si128(&g_aiT16_vec[24]);
-val7 = _mm_load_si128(&g_aiT16_vec[28]);
-
-__m128i temp1 = _mm_unpacklo_epi16(val0, val1); 
-__m128i temp2 = _mm_unpacklo_epi16(val1, val3);
-__m128i temp3 = _mm_unpacklo_epi16(val2, val5);
-__m128i temp4 = _mm_unpacklo_epi16(val3, val7);
-__m128i temp5 = _mm_unpackhi_epi16(val4, val1);
-__m128i temp6 = _mm_unpackhi_epi16(val5, val3);
-__m128i temp7 = _mm_unpackhi_epi16(val6, val5);
-__m128i temp8 = _mm_unpackhi_epi16(val7, val7);
-
-__m128i temp9 = _mm_unpacklo_epi32(temp1, temp2);
-__m128i temp10 = _mm_unpackhi_epi32(temp1, temp2);
-__m128i temp11 = _mm_unpacklo_epi32(temp3, temp4);
-__m128i temp12 = _mm_unpackhi_epi32(temp3, temp4);
-__m128i temp13 = _mm_unpacklo_epi32(temp5, temp6);
-__m128i temp14 = _mm_unpackhi_epi32(temp5, temp6);
-__m128i temp15 = _mm_unpacklo_epi32(temp7, temp8);
-__m128i temp16 = _mm_unpackhi_epi32(temp7, temp8);
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  why transpose 8 and store 4 ?
-__m128i T0 = _mm_unpacklo_epi64(temp9, temp11);
-__m128i T1 = _mm_unpackhi_epi64(temp9, temp11);
-__m128i T2 = _mm_unpacklo_epi64(temp10, temp12);
-__m128i T3 = _mm_unpackhi_epi64(temp10, temp12);
- 
-_mm_store_si128(&gt_vec[8], T0);   //store transposed 8X8 matrix
-_mm_store_si128(&gt_vec[9], T1);
-_mm_store_si128(&gt_vec[10], T2);
-_mm_store_si128(&gt_vec[11], T3);
-
-  
   for (int j=0; j<16; j++)
   {
-          
-    __m128i I0 = _mm_load_si128 (&Trans_vec[j]); 
-    __m128i II0 = _mm_load_si128 (&Trans_vec[j+16]); 
+    /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
+      
+    __m128i I0 = _mm_load_si128 (&random_vec[j]); 
+    __m128i II0 = _mm_load_si128 (&random_vec[j+16]); 
 
+  // for (int k=0; k<8; k++)
           //here we are loading up the transposed values in the initial matrix
           //multiplying it with the input numbers to produce intermediate 32-bit integers
           // we then sum up adjacent pairs of 32-bit integers and store them in the destination register
@@ -341,7 +402,9 @@ _mm_store_si128(&gt_vec[11], T3);
    
       //  O[k] = T[0]+T[1]+T[2]+T[3];    
             
-       //load the original matrix values, multiply it with the Transposed values
+  //  for (int k=0; k<4; k++)
+ //   {
+       //load the original matrix values, multiply it with the random values
        //store the low bits to I2 and the hi bits to I3
        I1 = _mm_load_si128 (&gt_vec[8]);       
        I2 = _mm_mullo_epi16 (I1, II0);
@@ -385,8 +448,7 @@ _mm_store_si128(&gt_vec[11], T3);
        __m128i R4 =_mm_hadd_epi32 (A7, A8);
 
 ///////////////////////////
-         __m128i add_reg;
-         add_reg= _mm_set1_epi32(add);
+         __m128i add_reg = _mm_set1_epi32(add);
 
          __m128i sum_vec0 = _mm_add_epi32(R3,R1);        
          sum_vec0 = _mm_add_epi32(sum_vec0,add_reg);
@@ -397,10 +459,10 @@ _mm_store_si128(&gt_vec[11], T3);
          sum_vec1 = _mm_add_epi32(sum_vec1,add_reg);
          sum_vec1 = _mm_srai_epi32(sum_vec1, shift); // shift right
 
-		 __m128i finalres0 = _mm_packs_epi32(sum_vec0, sum_vec1); // shrink packed 32bit to packed 16 bit and saturate
+	 __m128i finalres0 = _mm_packs_epi32(sum_vec0, sum_vec1); // shrink packed 32bit to packed 16 bit and saturate
          _mm_store_si128 (&out_vec[2*j], finalres0);
          
-         __m128i  sum_vec2 = _mm_sub_epi32(R4, R2);
+        __m128i  sum_vec2 = _mm_sub_epi32(R4, R2);
          sum_vec2 = _mm_add_epi32(sum_vec2,add_reg);
          sum_vec2 = _mm_srai_epi32(sum_vec2, shift); // shift right  	 
 
@@ -415,12 +477,13 @@ _mm_store_si128(&gt_vec[11], T3);
          I9 = _mm_unpacklo_epi32(I7, I8);
          I10 = _mm_unpackhi_epi32(I7, I8);
          
-		 sum_vec3 = _mm_packs_epi32(I9, I10); // shrink packed 32bit to packed 16 bit and saturate
+	 sum_vec3 = _mm_packs_epi32(I9, I10); // shrink packed 32bit to packed 16 bit and saturate
          _mm_store_si128 (&out_vec[2*j+1], sum_vec3);
 
+  	 src ++;
+  	 dst += 16;
   }
 }
-
 static void idct16_simd(short* pCoeff, short* pDst)
 {
   short tmp[ 16*16] __attribute__((aligned(16)));
