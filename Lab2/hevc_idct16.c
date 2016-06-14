@@ -132,23 +132,22 @@ static void idct16_scalar(short* pCoeff, short* pDst)
   partialButterflyInverse16(pCoeff, tmp, 7);
   partialButterflyInverse16(tmp, pDst, 12);
 }
-
-static void Transpose8x8(__m128i * SrcPntr,int i_idx, __m128i * TransPntr,int t_indx){
+static void Transpose8x8(__m128i* SrcPntr,int i_idx, __m128i* TransPntr,int t_indx){
 	
 __m128i SrcVal0,SrcVal1,SrcVal2,SrcVal3,SrcVal4,SrcVal5,SrcVal6,SrcVal7;
-__m128i temp0,temp1,temp2,temp3,temp4,temp5,temp6,temp7;
-__m128i temp8,temp9,temp10,temp11,temp12,temp13,temp14,temp15;
+__m128i temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8;
+__m128i temp9,temp10,temp11,temp12,temp13,temp14,temp15,temp16;
 __m128i TransVal0,TransVal1,TransVal2,TransVal3,TransVal4,TransVal5,TransVal6,TransVal7;
 
 //Load src values
-SrcVal0 = _mm_load_si128(SrcPntr[i_idx+0 ]);
-SrcVal1 = _mm_load_si128(SrcPntr[i_idx+4 ]);
-SrcVal2 = _mm_load_si128(SrcPntr[i_idx+8 ]);
-SrcVal3 = _mm_load_si128(SrcPntr[i_idx+12]);
-SrcVal4 = _mm_load_si128(SrcPntr[i_idx+16]);
-SrcVal5 = _mm_load_si128(SrcPntr[i_idx+20]);
-SrcVal6 = _mm_load_si128(SrcPntr[i_idx+24]);
-SrcVal7 = _mm_load_si128(SrcPntr[i_idx+28]);
+SrcVal0 = _mm_load_si128(&SrcPntr[i_idx+0 ]);
+SrcVal1 = _mm_load_si128(&SrcPntr[i_idx+4 ]);
+SrcVal2 = _mm_load_si128(&SrcPntr[i_idx+8 ]);
+SrcVal3 = _mm_load_si128(&SrcPntr[i_idx+12]);
+SrcVal4 = _mm_load_si128(&SrcPntr[i_idx+16]);
+SrcVal5 = _mm_load_si128(&SrcPntr[i_idx+20]);
+SrcVal6 = _mm_load_si128(&SrcPntr[i_idx+24]);
+SrcVal7 = _mm_load_si128(&SrcPntr[i_idx+28]);
    
 temp1 = _mm_unpacklo_epi16(SrcVal0, SrcVal1); 
 temp2 = _mm_unpacklo_epi16(SrcVal1, SrcVal3);
@@ -178,22 +177,23 @@ TransVal6 = _mm_unpacklo_epi64(temp14, temp16);
 TransVal7 = _mm_unpackhi_epi64(temp14, temp16);  
 
 //store transposed 8X8 matrix
-_mm_store_si128(TransPntr[t_indx+0], TransVal0);   
-_mm_store_si128(TransPntr[t_indx+1], TransVal1);
-_mm_store_si128(TransPntr[t_indx+2], TransVal2);
-_mm_store_si128(TransPntr[t_indx+3], TransVal3);
-_mm_store_si128(TransPntr[t_indx+4], TransVal4);
-_mm_store_si128(TransPntr[t_indx+5], TransVal5);
-_mm_store_si128(TransPntr[t_indx+6], TransVal6);
-_mm_store_si128(TransPntr[t_indx+7], TransVal7);
+_mm_store_si128(&TransPntr[t_indx+0], TransVal0);   
+_mm_store_si128(&TransPntr[t_indx+1], TransVal1);
+_mm_store_si128(&TransPntr[t_indx+2], TransVal2);
+_mm_store_si128(&TransPntr[t_indx+3], TransVal3);
+_mm_store_si128(&TransPntr[t_indx+4], TransVal4);
+_mm_store_si128(&TransPntr[t_indx+5], TransVal5);
+_mm_store_si128(&TransPntr[t_indx+6], TransVal6);
+_mm_store_si128(&TransPntr[t_indx+7], TransVal7);
 	
 }
 
-/// CURRENTLY SAME CODE AS SCALAR !!
-/// REPLACE HERE WITH SSE intrinsics
-static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
-{
 
+//scalar code for the inverse transform
+static void partialButterflyInverse16_ns(short *src, short *dst, int shift)
+{
+    int add = 1<<(shift-1);
+    
 //we cast the original 16X16 matrix to an SIMD vector type
     __m128i *g_aiT16_vec  = (__m128i *)g_aiT16; 
 
@@ -253,28 +253,40 @@ val5 = _mm_load_si128(&g_aiT16_vec[20]);
 val6 = _mm_load_si128(&g_aiT16_vec[24]);
 val7 = _mm_load_si128(&g_aiT16_vec[28]);
 
-temp1 = _mm_unpacklo_epi16(val0, val1); 
-temp2 = _mm_unpacklo_epi16(val1, val3);
-temp3 = _mm_unpacklo_epi16(val2, val5);
-temp4 = _mm_unpacklo_epi16(val3, val7);
-temp5 = _mm_unpackhi_epi16(val4, val1);
-temp6 = _mm_unpackhi_epi16(val5, val3);
-temp7 = _mm_unpackhi_epi16(val6, val5);
-temp8 = _mm_unpackhi_epi16(val7, val7);
 
- temp9 = _mm_unpacklo_epi32(temp1, temp2);
- temp10 = _mm_unpackhi_epi32(temp1, temp2);
- temp11 = _mm_unpacklo_epi32(temp3, temp4);
- temp12 = _mm_unpackhi_epi32(temp3, temp4);
- temp13 = _mm_unpacklo_epi32(temp5, temp6);
- temp14 = _mm_unpackhi_epi32(temp5, temp6);
- temp15 = _mm_unpacklo_epi32(temp7, temp8);
- temp16 = _mm_unpackhi_epi32(temp7, temp8);
+//load matrix g_aiT16_vec[0][0],[2][0]...
+
+val0 = _mm_load_si128(&g_aiT16_vec[0]);
+val1 = _mm_load_si128(&g_aiT16_vec[4]);
+val2 = _mm_load_si128(&g_aiT16_vec[8]);
+val3 = _mm_load_si128(&g_aiT16_vec[12]);
+val4 = _mm_load_si128(&g_aiT16_vec[16]);
+val5 = _mm_load_si128(&g_aiT16_vec[20]);
+val6 = _mm_load_si128(&g_aiT16_vec[24]);
+val7 = _mm_load_si128(&g_aiT16_vec[28]);
+
+__m128i temp1 = _mm_unpacklo_epi16(val0, val1); 
+__m128i temp2 = _mm_unpacklo_epi16(val1, val3);
+__m128i temp3 = _mm_unpacklo_epi16(val2, val5);
+__m128i temp4 = _mm_unpacklo_epi16(val3, val7);
+__m128i temp5 = _mm_unpackhi_epi16(val4, val1);
+__m128i temp6 = _mm_unpackhi_epi16(val5, val3);
+__m128i temp7 = _mm_unpackhi_epi16(val6, val5);
+__m128i temp8 = _mm_unpackhi_epi16(val7, val7);
+
+__m128i temp9 = _mm_unpacklo_epi32(temp1, temp2);
+__m128i temp10 = _mm_unpackhi_epi32(temp1, temp2);
+__m128i temp11 = _mm_unpacklo_epi32(temp3, temp4);
+__m128i temp12 = _mm_unpackhi_epi32(temp3, temp4);
+__m128i temp13 = _mm_unpacklo_epi32(temp5, temp6);
+__m128i temp14 = _mm_unpackhi_epi32(temp5, temp6);
+__m128i temp15 = _mm_unpacklo_epi32(temp7, temp8);
+__m128i temp16 = _mm_unpackhi_epi32(temp7, temp8);
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  why transpose 8 and store 4 ?
- T0 = _mm_unpacklo_epi64(temp9, temp11);
- T1 = _mm_unpackhi_epi64(temp9, temp11);
- T2 = _mm_unpacklo_epi64(temp10, temp12);
- T3 = _mm_unpackhi_epi64(temp10, temp12);
+__m128i T0 = _mm_unpacklo_epi64(temp9, temp11);
+__m128i T1 = _mm_unpackhi_epi64(temp9, temp11);
+__m128i T2 = _mm_unpacklo_epi64(temp10, temp12);
+__m128i T3 = _mm_unpackhi_epi64(temp10, temp12);
  
 _mm_store_si128(&gt_vec[8], T0);   //store transposed 8X8 matrix
 _mm_store_si128(&gt_vec[9], T1);
@@ -282,7 +294,6 @@ _mm_store_si128(&gt_vec[10], T2);
 _mm_store_si128(&gt_vec[11], T3);
 
   
-
   for (int j=0; j<16; j++)
   {
           
@@ -372,7 +383,8 @@ _mm_store_si128(&gt_vec[11], T3);
        __m128i R4 =_mm_hadd_epi32 (A7, A8);
 
 ///////////////////////////
-         __m128i add_reg = _mm_set1_epi32(add);
+         __m128i add_reg;
+         add_reg= _mm_set1_epi32(add);
 
          __m128i sum_vec0 = _mm_add_epi32(R3,R1);        
          sum_vec0 = _mm_add_epi32(sum_vec0,add_reg);
@@ -406,6 +418,7 @@ _mm_store_si128(&gt_vec[11], T3);
 
   }
 }
+
 static void idct16_simd(short* pCoeff, short* pDst)
 {
   short tmp[ 16*16] __attribute__((aligned(16)));
