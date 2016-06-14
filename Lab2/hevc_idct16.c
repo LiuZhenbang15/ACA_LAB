@@ -479,9 +479,6 @@ tranpose8x8(in_vec,1, random_vec,24);
          
 	 sum_vec3 = _mm_packs_epi32(I9, I10); // shrink packed 32bit to packed 16 bit and saturate
          _mm_store_si128 (&out_vec[2*j+1], sum_vec3);
-
-  	 src ++;
-  	 dst += 16;
   }
 }
 static void idct16_simd(short* pCoeff, short* pDst)
