@@ -154,8 +154,8 @@ static void partialButterflyInverse16_simd(short *src, short *dst, int shift)
   __m128i *gt_vec = (__m128i *)gt;
 
 //same as above
-  short random[16][16] __attribute__ ((aligned (16)));
-  __m128i *random_vec = (__m128i *)random;  
+  short Trans[16][16] __attribute__ ((aligned (16)));
+  __m128i *Trans_vec = (__m128i *)Trans;  
   
 
 //transpose the g_aiT16[1],[3],[5]...
@@ -227,14 +227,14 @@ __m128i T5 = _mm_unpackhi_epi64(temp13, temp15);
 __m128i T6 = _mm_unpacklo_epi64(temp14, temp16);
 __m128i T7 = _mm_unpackhi_epi64(temp14, temp16);
 
-_mm_store_si128(&random_vec[0], T0);   //store transposed 8X8 matrix
-_mm_store_si128(&random_vec[1], T1);
-_mm_store_si128(&random_vec[2], T2);
-_mm_store_si128(&random_vec[3], T3);
-_mm_store_si128(&random_vec[4], T4);
-_mm_store_si128(&random_vec[5], T5);
-_mm_store_si128(&random_vec[6], T6);
-_mm_store_si128(&random_vec[7], T7);
+_mm_store_si128(&Trans_vec[0], T0);   //store transposed 8X8 matrix
+_mm_store_si128(&Trans_vec[1], T1);
+_mm_store_si128(&Trans_vec[2], T2);
+_mm_store_si128(&Trans_vec[3], T3);
+_mm_store_si128(&Trans_vec[4], T4);
+_mm_store_si128(&Trans_vec[5], T5);
+_mm_store_si128(&Trans_vec[6], T6);
+_mm_store_si128(&Trans_vec[7], T7);
 
 a = _mm_load_si128(&in_vec[3]);
 b = _mm_load_si128(&in_vec[7]);
@@ -272,15 +272,14 @@ h = _mm_load_si128(&in_vec[31]);
  T6 = _mm_unpacklo_epi64(temp14, temp16);
  T7 = _mm_unpackhi_epi64(temp14, temp16);  
 
-_mm_store_si128(&random_vec[8], T0);   //store transposed 8X8 matrix
-_mm_store_si128(&random_vec[9], T1);
-_mm_store_si128(&random_vec[10], T2);
-_mm_store_si128(&random_vec[11], T3);
-_mm_store_si128(&random_vec[12], T4);
-_mm_store_si128(&random_vec[13], T5);
-_mm_store_si128(&random_vec[14], T6);
-_mm_store_si128(&random_vec[15], T7);
-
+_mm_store_si128(&Trans_vec[8], T0);   //store transposed 8X8 matrix
+_mm_store_si128(&Trans_vec[9], T1);
+_mm_store_si128(&Trans_vec[10], T2);
+_mm_store_si128(&Trans_vec[11], T3);
+_mm_store_si128(&Trans_vec[12], T4);
+_mm_store_si128(&Trans_vec[13], T5);
+_mm_store_si128(&Trans_vec[14], T6);
+_mm_store_si128(&Trans_vec[15], T7);
 
 //load matrix g_aiT16_vec[0][0],[2][0]...
 
@@ -362,14 +361,14 @@ h = _mm_load_si128(&in_vec[28]);
  T6 = _mm_unpacklo_epi64(temp14, temp16);
  T7 = _mm_unpackhi_epi64(temp14, temp16);
 
-_mm_store_si128(&random_vec[16], T0);   //store transposed 8X8 matrix
-_mm_store_si128(&random_vec[17], T1);
-_mm_store_si128(&random_vec[18], T2);
-_mm_store_si128(&random_vec[19], T3);
-_mm_store_si128(&random_vec[20], T4);
-_mm_store_si128(&random_vec[21], T5);
-_mm_store_si128(&random_vec[22], T6);
-_mm_store_si128(&random_vec[23], T7);
+_mm_store_si128(&Trans_vec[16], T0);   //store transposed 8X8 matrix
+_mm_store_si128(&Trans_vec[17], T1);
+_mm_store_si128(&Trans_vec[18], T2);
+_mm_store_si128(&Trans_vec[19], T3);
+_mm_store_si128(&Trans_vec[20], T4);
+_mm_store_si128(&Trans_vec[21], T5);
+_mm_store_si128(&Trans_vec[22], T6);
+_mm_store_si128(&Trans_vec[23], T7);
       
 a = _mm_load_si128(&in_vec[1]);
 b = _mm_load_si128(&in_vec[5]);
@@ -407,22 +406,22 @@ h = _mm_load_si128(&in_vec[29]);
  T6 = _mm_unpacklo_epi64(temp14, temp16);
  T7 = _mm_unpackhi_epi64(temp14, temp16);  
 
-_mm_store_si128(&random_vec[24], T0);   //store transposed 8X8 matrix
-_mm_store_si128(&random_vec[25], T1);
-_mm_store_si128(&random_vec[26], T2);
-_mm_store_si128(&random_vec[27], T3);
-_mm_store_si128(&random_vec[28], T4);
-_mm_store_si128(&random_vec[29], T5);
-_mm_store_si128(&random_vec[30], T6);
-_mm_store_si128(&random_vec[31], T7);  
+_mm_store_si128(&Trans_vec[24], T0);   //store transposed 8X8 matrix
+_mm_store_si128(&Trans_vec[25], T1);
+_mm_store_si128(&Trans_vec[26], T2);
+_mm_store_si128(&Trans_vec[27], T3);
+_mm_store_si128(&Trans_vec[28], T4);
+_mm_store_si128(&Trans_vec[29], T5);
+_mm_store_si128(&Trans_vec[30], T6);
+_mm_store_si128(&Trans_vec[31], T7);  
   
 
   for (int j=0; j<16; j++)
   {
     /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
       
-    __m128i I0 = _mm_load_si128 (&random_vec[j]); 
-    __m128i II0 = _mm_load_si128 (&random_vec[j+16]); 
+    __m128i I0 = _mm_load_si128 (&Trans_vec[j]); 
+    __m128i II0 = _mm_load_si128 (&Trans_vec[j+16]); 
 
   // for (int k=0; k<8; k++)
           //here we are loading up the transposed values in the initial matrix
