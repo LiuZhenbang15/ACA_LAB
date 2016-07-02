@@ -76,7 +76,7 @@ do
 			for k in "${bench[@]}"
 			do
 # width = 8 , inorder = false, branching = 2lev, memport =2
-				./sim-outorder -fetch:ifqsize 8 -decode:width 8 -issue:width 8 -commit:width 8 -issue:inorder false -res:memport 2 -res:ialu 4 -res:imult 1 -res:fpalu 4 -res:fpmult 1 -bpred 2lev -ruu:size "${Q3Param1[$j]}" -lsq:size "${Q3Param2[$j]}" -redir:sim ../SimpleScalar/results/$i-ruu-"${Q3Param1[$j]}"-lsq-"${Q3Param2[$j]}"-$k.result ../SimpleScalar/benchmarks/$k
+				./sim-outorder -fetch:ifqsize 8 -decode:width 8 -issue:width 8 -commit:width 8 -issue:inorder false -res:memport 2 -res:ialu 4 -res:imult 1 -res:fpalu 4 -res:fpmult 1 -bpred 2lev -ruu:size "${Q3Param1[$j]}" -lsq:size "${Q3Param2[$j]}" -redir:sim ../SimpleScalar/results/$i-normal-ruu-"${Q3Param1[$j]}"-lsq-"${Q3Param2[$j]}"-$k.result ../SimpleScalar/benchmarks/$k
 			done
 		done
 # double resources
@@ -85,7 +85,7 @@ do
 			for k in "${bench[@]}"
 			do
 # width = 8 , inorder = false, branching = 2lev, memport =2
-				./sim-outorder -fetch:ifqsize 8 -decode:width 8 -issue:width 8 -commit:width 8 -issue:inorder false -res:memport 2 -res:ialu 8 -res:imult 2 -res:fpalu 8 -res:fpmult 2 -bpred 2lev -ruu:size "${Q3Param1[$j]}" -lsq:size "${Q3Param2[$j]}" -redir:sim ../SimpleScalar/results/$i-ruu-"${Q3Param1[$j]}"-lsq-"${Q3Param2[$j]}"-$k.result ../SimpleScalar/benchmarks/$k
+				./sim-outorder -fetch:ifqsize 8 -decode:width 8 -issue:width 8 -commit:width 8 -issue:inorder false -res:memport 2 -res:ialu 8 -res:imult 2 -res:fpalu 8 -res:fpmult 2 -bpred 2lev -ruu:size "${Q3Param1[$j]}" -lsq:size "${Q3Param2[$j]}" -redir:sim ../SimpleScalar/results/$i-double-ruu-"${Q3Param1[$j]}"-lsq-"${Q3Param2[$j]}"-$k.result ../SimpleScalar/benchmarks/$k
 			done
 		done		
 	fi
