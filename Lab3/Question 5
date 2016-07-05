@@ -1,47 +1,50 @@
-Question 5:
-Default Latency:
-./sim-outorder -bpred:comb 1024 -cache:dl2 ul2:1024:64:4:l -mem:lat 18 2 -issue:inorder false -issue:width 4 -ruu:size 32 -lsq:size 16 ./benchmarks/memcopy
+//////////////Question 5:///////////////////////////////////////////
+		Default Latency:
+		./sim-outorder -bpred:comb 1024 -cache:dl2 ul2:1024:64:4:l -mem:lat 18 2 -issue:inorder false -issue:width 4 -ruu:size 32 -lsq:size 16 ./benchmarks/memcopy
 
-miss rate= 0.1710
-hit rate = 1-missrate
-hit time = 6 cycles
-block size = 64, chunk size = block size/width = 64/8 = 8
-miss time = 18+(7x2) = 32 cycles
+		miss rate= 0.1710
+		hit rate = 1-missrate
+		hit time = 6 cycles
+		block size = 64, chunk size = block size/width = 64/8 = 8
+		miss time = 18+(7x2) = 32 cycles
 
-AMAT = HitRate x HitTime + MissRate x MissTime
+		AMAT = HitRate x HitTime + MissRate x MissTime
 
-AMAT default = (1-0.1710) * 6 + 0.1710 * 32 = 10.446
-IPC = 1.5894
+		AMAT default = (1-0.1710) * 6 + 0.1710 * 32 = 10.446
+		IPC = 1.5894
 
-High latency:
+		High latency:
 
-./sim-outorder -bpred:comb 1024 -cache:dl2 ul2:1024:64:4:l -mem:lat 200 2 -issue:inorder false -issue:width 4 -ruu:size 32 -lsq:size 16 ./benchmarks/memcopy
+		./sim-outorder -bpred:comb 1024 -cache:dl2 ul2:1024:64:4:l -mem:lat 200 2 -issue:inorder false -issue:width 4 -ruu:size 32 -lsq:size 16 ./benchmarks/memcopy
 
-miss time = 200+(7x2) = 214
-AMAT High latency = (1-0.1710) * 6 + 0.1710 * 214 =  41.568
-IPC: 0.5429
+		miss time = 200+(7x2) = 214
+		AMAT High latency = (1-0.1710) * 6 + 0.1710 * 214 =  41.568
+		IPC: 0.5429
 
-Come up with your own cache design:
+---------------Come up with your own cache design:-------------
 
-default cache:
-assoc = 4
-nsets = 1024
-bsize =64
+	default cache:
+	assoc = 4
+	nsets = 1024
+	bsize =64
 
-New cache design:
-assoc = 8(doubled once)
-nsets = 2048(doubled once)
-bsize = 1024(doubled 4 times but was not specified that this results in cache latency so only mem latency increased)
+	New cache design:
+	To reduce the AMAT from the high latency memory from 41 to something faster we designed a new cache. The cache was designed using the slides and some trial and error, the results are as followed:
 
-hit time =  1+1+6 = 8
-block size = 1024, chunk size = block size/width = 1024/8 = 128
-miss time = 200+(128x2) = 454
+	assoc = 4 big block sizes don't need high associativity
+	nsets = 2048 One doubling decreased miss rate by double so worth the increase
+	bsize = 4096 since only initial memory latency was high (200) and all subsequent chunks had a low latency (2) and no cache latency increase when this number was increased this was an easy way to gain peformance. After some trial and error this number seemeed to give the best result.
 
-With this cache design the results are as follow:
-./sim-outorder -bpred:comb 1024 -cache:dl2 ul2:2048:1024:8:l -mem:lat 200 2 -issue:inorder false -issue:width 4 -ruu:size 32 -lsq:size 16 ./benchmarks/memcopy
+	hit time =  1+6 = 7
+	block size = 4096, chunk size = block size/width = 4096/8 = 512
+	miss time = 200+(511*2) = 1222
+
+	With this cache design the results are as follow:
+	./sim-outorder -bpred:comb 1024 -cache:dl2 ul2:2048:4096:4:l -mem:lat 200 2 -issue:inorder false -issue:width 4 -ruu:size 32 -lsq:size 16 ./benchmarks/memcopy
 
 
-IPC 1.8631
-miss_rate = 0.0029
+	IPC 1.9520
+	miss_rate = 0.0007
 
-AMAT = (1-0.0029)*8+0.0029*454 = 9.2934
+	AMAT = (1-0.0007)*7+0.0007*(200+(((4096/8)-1)*2)) = 7.8505
+
